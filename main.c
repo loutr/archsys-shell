@@ -57,8 +57,8 @@ int execute (struct cmd *cmd)
 		if (pid == 0)
 		{
 		    execvp(cmd->args[0], cmd->args);
-		    printf("command not found: %s\n", cmd->args[0]);
-		    exit(EXIT_FAILURE);
+		    perror(cmd->args[0]);
+		    exit(errno);
 		}
 
 		int status;
@@ -92,18 +92,58 @@ int execute (struct cmd *cmd)
 
 	    case C_PIPE:
 	    {
+		int p_descriptor[2];
+		pipe(p_descriptor);
+		
+		int lf = fork();
+		if (lf == 0)
+		{
+		    dup2(p_descriptor[1], 1); close(p_descriptor[0]);
+		    execute(cmd->left);
+		    close(p_descriptor[1]);
+		    exit(errno);
+		}
 
+		int rf = fork();
+		if (rf == 0)
+		{
+		    dup2(p_descriptor[0], 0); close(p_descriptor[1]);
+		    execute(cmd->right);
+		    close(p_descriptor[0]);
+		    exit(errno);
+		}
+
+		close(p_descriptor[0]); close(p_descriptor[1]);
+		int status;
+		waitpid(-1, &status, 0);
+		if (status == 0)
+		{
+		    waitpid(-1, &status, 0);
+		    return status;
+		}
+		else return status;
 	    }
 
 
 	    case C_VOID:
-		errmsg("I do not know how to do this, please help me!");
+	    {
+		int pid = fork();
+		if (pid < 0) return 1;
+
+		if (pid == 0)
+		{
+		    execute(cmd->left);
+		    exit(errno);
+		}
+
+		int status;
+		waitpid(pid, &status, 0);
+		return status;
+	    }
+
+	    default: // cannot happen
 		return -1;
 	}
-
-	// Just to satisfy the compiler
-	errmsg("This cannot happen!");
-	return -1;
 }
 
 int main (int argc, char **argv)
@@ -122,7 +162,7 @@ int main (int argc, char **argv)
 
 		struct cmd *cmd = parser(line);
 		if (!cmd) continue;	// some parse error occurred; ignore
-		//output(cmd, 0);	// activate this for debugging
+		// output(cmd, 0);	// activate this for debugging
 		execute(cmd);
 	}
 
