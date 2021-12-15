@@ -1,6 +1,6 @@
 typedef enum {
     C_PLAIN,	// string (regular command)
-    C_VOID,	// group in parentheses
+    C_VOID,	// subshell execution
     C_AND,	// &&
     C_OR,	// ||
     C_PIPE,	// regular UNIX pipe |

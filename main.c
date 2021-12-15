@@ -11,35 +11,58 @@
 
 #include "global.h"
 
-// This is the file that you should work on.
-
-// declaration
-int execute (struct cmd *cmd);
-
-// name of the program, to be printed in several places
 #define NAME "SUPER SHELL 3000"
 
-// Some helpful functions
 
 void errmsg (char *msg)
 {
-	fprintf(stderr, "error: %s\n", msg);
+    fprintf(stderr, "error: %s\n", msg);
 }
 
-// apply_redirects() should modify the file descriptors for standard
-// input/output/error (0/1/2) of the current process to the files
-// whose names are given in cmd->input/output/error.
-// append is like output but the file should be extended rather
-// than overwritten.
+// In bash, only the last output redirection is applied if several are provided
+// Here, append (>>) has precedence over (>), regardless of other redirections
+// This function may only be applied in C_PLAIN and C_VOID cases
 
 void apply_redirects (struct cmd *cmd)
 {
-	if (cmd->input || cmd->output || cmd->append || cmd->error)
-	{
-		errmsg("I do not know how to redirect, please help me!");
-		exit(-1);
+    if (cmd->input)
+    {
+	int fd = open(cmd->input, O_RDONLY, 0666);
+	if (fd == -1) {
+	    perror(cmd->input);
+	    exit(errno);
 	}
+	dup2(fd, 0);
+    }
+    if (!cmd->append && cmd->output)
+    {
+	int fd = creat(cmd->output, 0666);
+	if (fd == -1) {
+	    perror(cmd->output);
+	    exit(errno);
+	}
+	dup2(fd, 1);
+    }
+    if (cmd->append)
+    {
+	int fd = open(cmd->append, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	if (fd == -1) {
+	    perror(cmd->append);
+	    exit(errno);
+	}
+	dup2(fd, 1);
+    }
+    if (cmd->error)
+    {
+	int fd = creat(cmd->error, 0666);
+	if (fd == -1) {
+	    perror(cmd->error);
+	    exit(errno);
+	}
+	dup2(fd, 2);
+    }
 }
+
 
 // The function execute() takes a command parsed at the command line.
 // The structure of the command is explained in output.c.
@@ -47,15 +70,16 @@ void apply_redirects (struct cmd *cmd)
 
 int execute (struct cmd *cmd)
 {
-	switch (cmd->type)
-	{
-	    case C_PLAIN:
+    switch (cmd->type)
+    {
+	case C_PLAIN:
 	    {
 		int pid = fork();
 		if (pid < 0) return 1;
 
 		if (pid == 0)
 		{
+		    apply_redirects(cmd);
 		    execvp(cmd->args[0], cmd->args);
 		    perror(cmd->args[0]);
 		    exit(errno);
@@ -66,13 +90,13 @@ int execute (struct cmd *cmd)
 		return status;
 	    }
 
-	    case C_SEQ:
+	case C_SEQ:
 	    {
 		execute(cmd->left);
 		return execute(cmd->right);
 	    }
 
-	    case C_AND:
+	case C_AND:
 	    {
 		int ret = execute(cmd->left);
 		if (!ret)
@@ -81,7 +105,7 @@ int execute (struct cmd *cmd)
 		    return ret;
 	    }
 
-	    case C_OR:
+	case C_OR:
 	    {
 		int ret = execute(cmd->left);
 		if (ret)
@@ -90,11 +114,11 @@ int execute (struct cmd *cmd)
 		    return ret;
 	    }
 
-	    case C_PIPE:
+	case C_PIPE:
 	    {
 		int p_descriptor[2];
 		pipe(p_descriptor);
-		
+
 		int lf = fork();
 		if (lf == 0)
 		{
@@ -114,6 +138,7 @@ int execute (struct cmd *cmd)
 		}
 
 		close(p_descriptor[0]); close(p_descriptor[1]);
+
 		int status;
 		waitpid(-1, &status, 0);
 		if (status == 0)
@@ -121,17 +146,18 @@ int execute (struct cmd *cmd)
 		    waitpid(-1, &status, 0);
 		    return status;
 		}
-		else return status;
+		else return status; // NOTE does the other process remain alive?
 	    }
 
 
-	    case C_VOID:
+	case C_VOID:
 	    {
 		int pid = fork();
 		if (pid < 0) return 1;
 
 		if (pid == 0)
 		{
+		    apply_redirects(cmd);
 		    execute(cmd->left);
 		    exit(errno);
 		}
@@ -141,31 +167,40 @@ int execute (struct cmd *cmd)
 		return status;
 	    }
 
-	    default: // cannot happen
-		return -1;
-	}
+	default: // cannot happen
+	    return -1;
+    }
 }
+
+static void sig_handler (int signo)
+{}
 
 int main (int argc, char **argv)
 {
-	char *prompt = malloc(strlen(NAME) + 3);
-	printf("welcome to %s!\n", NAME);
-	sprintf(prompt, "%s> ", NAME);
+    struct sigaction psa;
+    psa.sa_handler = sig_handler;
+    sigaction(SIGINT, &psa, NULL);
 
-	while (1)
-	{
-		char *line = readline(prompt);
-		if (!line) break;	// user pressed Ctrl+D; quit shell
-		if (!*line) continue;	// empty line
+    int res = 0;
+    char *good = ":) > ";
+    char *bad  = ":( > ";
+    char *prompt = good;
+    printf("welcome to %s!\n", NAME);
 
-		add_history(line);	// add line to history
+    while (1)
+    {
+	char *line = readline(prompt);
+	if (!line) break;	// user pressed Ctrl+D; quit shell
+	if (!*line) continue;	// empty line
 
-		struct cmd *cmd = parser(line);
-		if (!cmd) continue;	// some parse error occurred; ignore
-		// output(cmd, 0);	// activate this for debugging
-		execute(cmd);
-	}
+	add_history(line);	// add line to history
 
-	printf("goodbye!\n");
-	return 0;
+	struct cmd *cmd = parser(line);
+	if (!cmd) continue;	// some parse error occurred; ignore
+	res = execute(cmd);
+	prompt = res ? bad : good;
+    }
+
+    printf("goodbye!\n");
+    return EXIT_SUCCESS;
 }
