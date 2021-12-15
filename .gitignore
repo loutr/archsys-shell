@@ -1,2 +1,4 @@
+lex.c
+parse.c
 *.o
 shell
