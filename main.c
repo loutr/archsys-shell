@@ -66,6 +66,21 @@ void apply_redirects (struct cmd *cmd)
     }
 }
 
+// detects if the given C_PLAIN command is a shell builtin, and execute it as such if it is the case.
+int exec_custom_commands (struct cmd *cmd)
+{
+    if (strcmp(cmd->args[0], "cd") == 0)
+    {
+	char *dest = cmd->args[1] ? cmd->args[1] : getenv("HOME");
+	chdir(dest);
+	char *dest_fullname = calloc(FILENAME_MAX, sizeof(char));
+	getcwd(dest_fullname, FILENAME_MAX);
+	setenv("PWD", dest_fullname, 1);
+	return errno;
+    }
+    else
+	return -1;
+}
 
 // The function execute() takes a command parsed at the command line.
 // The structure of the command is explained in output.c.
@@ -78,6 +93,7 @@ int execute (struct cmd *cmd)
     {
 	case C_PLAIN:
 	    {
+		if (!exec_custom_commands(cmd)) return 0;
 		int pid = fork();
 		if (pid < 0) return 1;
 
@@ -193,6 +209,7 @@ int main (int argc, char **argv)
 
     while (1)
     {
+	printf("\n%s in %s:\n", getenv("USER"), getenv("PWD"));
 	char *line = readline(prompt);
 	if (!line) break;	// user pressed Ctrl+D; quit shell
 	if (!*line) continue;	// empty line
