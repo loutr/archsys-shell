@@ -21,14 +21,14 @@ void errmsg (char *msg)
 
 // In bash, only the last output redirection is applied if several are provided
 // Here, append (>>) has precedence over (>), regardless of other redirections
-// This function may only be applied in C_PLAIN and C_VOID cases
 
 void apply_redirects (struct cmd *cmd)
 {
     if (cmd->input)
     {
 	int fd = open(cmd->input, O_RDONLY, 0666);
-	if (fd == -1) {
+	if (fd == -1)
+	{
 	    perror(cmd->input);
 	    exit(errno);
 	}
@@ -37,7 +37,8 @@ void apply_redirects (struct cmd *cmd)
     if (!cmd->append && cmd->output)
     {
 	int fd = creat(cmd->output, 0666);
-	if (fd == -1) {
+	if (fd == -1)
+	{
 	    perror(cmd->output);
 	    exit(errno);
 	}
@@ -46,7 +47,8 @@ void apply_redirects (struct cmd *cmd)
     if (cmd->append)
     {
 	int fd = open(cmd->append, O_CREAT | O_WRONLY | O_APPEND, 0666);
-	if (fd == -1) {
+	if (fd == -1)
+	{
 	    perror(cmd->append);
 	    exit(errno);
 	}
@@ -55,7 +57,8 @@ void apply_redirects (struct cmd *cmd)
     if (cmd->error)
     {
 	int fd = creat(cmd->error, 0666);
-	if (fd == -1) {
+	if (fd == -1)
+	{
 	    perror(cmd->error);
 	    exit(errno);
 	}
@@ -67,6 +70,7 @@ void apply_redirects (struct cmd *cmd)
 // The function execute() takes a command parsed at the command line.
 // The structure of the command is explained in output.c.
 // Returns the exit code of the command in question.
+// The apply_redirects function is only applied in the C_PLAIN and C_VOID cases
 
 int execute (struct cmd *cmd)
 {
@@ -139,14 +143,14 @@ int execute (struct cmd *cmd)
 
 		close(p_descriptor[0]); close(p_descriptor[1]);
 
-		int status;
-		waitpid(-1, &status, 0);
-		if (status == 0)
+		int status1, status2;
+		waitpid(-1, &status1, 0);
+		waitpid(-1, &status2, 0);
+		if (status1 == 0)
 		{
-		    waitpid(-1, &status, 0);
-		    return status;
+		    return status2;
 		}
-		else return status; // NOTE does the other process remain alive?
+		else return status1;
 	    }
 
 
