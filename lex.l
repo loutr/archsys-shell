@@ -8,6 +8,7 @@
 %option noinput
 %option noyywrap
 
+word_valid		[^" ""("")""|"";""&&"">""<""2>"]
 %%
 
 "("			{ return '('; }
@@ -21,13 +22,15 @@
 "<"             	{ return INPUT; }
 "2>"            	{ return ERROR; }
 
+
 (\"[^"]*\")|(\'[^']*\') {
 			    yylval.string = strndup(yytext + 1, strlen(yytext + 2));
 			    return ARG;
 			}
 #.*			;
-[^\ ]*			{
+{word_valid}*		{
 			    yylval.string = strdup(yytext);
 			    return ARG;
 			}
+.			; // if not added, unmatched characters will end up being printed in the buffer
 

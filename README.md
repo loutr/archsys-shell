@@ -60,6 +60,13 @@ things), and it is what I used in this project. In order to reimplement it, one 
   - perform the actual expansion in the string, namely allocating a new string
     with an appropriate size and adding the results of the previous search.
 
+## Notes for myself
+Unmatched characters in the lexer end up, *sooner or later* being displayed in the buffer, which is very
+inconvenient and is why it is necessary to have the rule `. ;`. Besides, the definition of a word has to
+differ from the original one (which is too restrictive and does not allow proper variable expansion),
+without being too general like `[^\ ]*`, which leads to ill-formed commands like `cmd1; cmd2` into
+`cmd1;`, `cmd2` (and not `cmd1`, `SEQ`, `cmd2` as it should be).
+Because flex always try to match the longest string, the definition of a word must exclude `(`, `|`, etc.
 
 ## Dependencies and installation
 
