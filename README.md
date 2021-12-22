@@ -47,8 +47,19 @@ You may find the answers to the different questions asked in it below.
 
 ## Bonus questions
 
-`ls` and `cat` are GNU utilities and are not directly linked to the shell (even though it is still
-possible to reimplement them as well); unlike `cd` which is a shell builtin.
+1. `ls` and `cat` are GNU utilities and are not directly linked to the shell (even though it is still
+possible to reimplement them as well); unlike `cd` which is a shell builtin. I reimplemented it using
+standard functions like `setenv`, `getenv`, `chdir`, etc. The special function `exec_builtin` catches
+any C_PLAIN command that is interpreted as a shell builtin. This allows for better maintainability,
+should any new builtin be added.
+
+2. The standard library function `wordexp` matches our need for globbing (and actually much more
+things), and it is what I used in this project. In order to reimplement it, one would have to:
+  - decompose the string as {prefix_folder, suffix};
+  - move to the appropriate folder and seek all matching files (potentially in sub-directories);
+  - perform the actual expansion in the string, namely allocating a new string
+    with an appropriate size and adding the results of the previous search.
+
 
 ## Dependencies and installation
 

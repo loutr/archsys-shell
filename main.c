@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <wordexp.h>
 
 #include "global.h"
 
@@ -67,7 +68,7 @@ void apply_redirects (struct cmd *cmd)
 }
 
 // detects if the given C_PLAIN command is a shell builtin, and execute it as such if it is the case.
-int exec_custom_commands (struct cmd *cmd)
+int exec_builtin (struct cmd *cmd)
 {
     if (strcmp(cmd->args[0], "cd") == 0)
     {
@@ -93,17 +94,30 @@ int execute (struct cmd *cmd)
     {
 	case C_PLAIN:
 	    {
-		if (!exec_custom_commands(cmd)) return 0;
+		if (!exec_builtin(cmd)) return 0;
+
+		wordexp_t *expansion = malloc(sizeof(wordexp_t));
+		expansion->we_wordc = 0;
+
+		for (int i = 0; cmd->args[i] != NULL; i++)
+		{ // expand the arguments
+		    int status = wordexp(cmd->args[i], expansion, WRDE_APPEND);
+		    if (status) return status;
+		}
+
 		int pid = fork();
 		if (pid < 0) return 1;
 
 		if (pid == 0)
 		{
 		    apply_redirects(cmd);
-		    execvp(cmd->args[0], cmd->args);
-		    perror(cmd->args[0]);
+		    execvp(expansion->we_wordv[0], expansion->we_wordv);
+		    perror(expansion->we_wordv[0]);
 		    exit(errno);
 		}
+
+		wordfree(expansion);
+		free(expansion);
 
 		int status;
 		waitpid(pid, &status, 0);
@@ -222,6 +236,6 @@ int main (int argc, char **argv)
 	prompt = res ? bad : good;
     }
 
-    printf("goodbye!\n");
+    printf("\ngoodbye!\n");
     return EXIT_SUCCESS;
 }
