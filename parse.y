@@ -60,7 +60,7 @@ single  : args mods
 	  }
 
 
-args     : arglist
+args	: arglist
 	  {
 		int cnt = 0;
 		struct arglist *pt = $1, *tmp;

@@ -15,7 +15,7 @@ You may find the answers to the different questions asked in it below.
 
 ## Answers to the subject
 
-1.  Functions parameters are returned by the parser in the form of an array. Besides, the command
+1.  Function parameters are returned by the parser in the form of an array. Besides, the command
     is usually not provided using its full path, but instead works with a PATH variable like in
     other shells. The most appropriate command is thus `execvp` (v: array-shaped parameter list;
     p: path use, in our case imported from the shell that called ours).
@@ -29,7 +29,7 @@ You may find the answers to the different questions asked in it below.
     indeed, in the first case the user will still be able to use its computer.
 
 4.  parentheses form a "subshell". They require the shell to fork once in order to execute what is
-    between the parentheses. An apparent result can be that the command `(cd /folder)` has no effect
+    between the parentheses. An apparent result can be that the command `(cd folder)` has no effect
     on the shell session. Another one is that the command `(cmd1; cmd2) > log` gets both commands
     outputs redirected in file `log`, whereas `cmd1; cmd2 > log` is usually parsed as "execute cmd1,
     then write cmd2 output to log".
@@ -42,16 +42,16 @@ You may find the answers to the different questions asked in it below.
     option. Thus, appropriate redirections are only applied in these cases (with the function
     `apply_redirections`).
 
-7.  The `dup2` command cannot be used because it is necessary to bridge to file descriptors that are
-    defined in two separate processes.
+7.  The `dup2` command cannot be used on its own because it is necessary to bridge to file
+    descriptors that are defined in two separate processes.
 
 ## Bonus questions
 
 1. `ls` and `cat` are GNU utilities and are not directly linked to the shell (even though it is still
-possible to reimplement them as well); unlike `cd` which is a shell builtin. I reimplemented it using
+possible to reimplement them as well); unlike `cd` which is a shell built-in. I reimplemented it using
 standard functions like `setenv`, `getenv`, `chdir`, etc. The special function `exec_builtin` catches
-any C_PLAIN command that is interpreted as a shell builtin. This allows for better maintainability,
-should any new builtin be added.
+any C_PLAIN command that is interpreted as a shell built-in. This allows for better maintainability,
+should any new built-in be added.
 
 2. The standard library function `wordexp` matches our need for globbing (and actually much more
 things), and it is what I used in this project. In order to reimplement it, one would have to:
@@ -59,6 +59,15 @@ things), and it is what I used in this project. In order to reimplement it, one 
   - move to the appropriate folder and seek all matching files (potentially in sub-directories);
   - perform the actual expansion in the string, namely allocating a new string
     with an appropriate size and adding the results of the previous search.
+
+3. I did not implement `jobs`.
+
+4. I did not implement variables. I believe an appropriate way to do it would be to change the lexer
+and make it detect words of the form `<word1>=<word2>` and mark them separately. Some of these words may
+not be variables declaration, like in `ls --color=auto`. Thus, the parser should be modified to detect that
+and create a separate category, like `C_VAR`, that could be executed as a direct call to `setenv`.
+No further expansion processing is required, because `wordexp` already handles it (as a consequence,
+already-existing variables are expanded correctly without any additional work).
 
 ## Notes for myself
 Unmatched characters in the lexer end up, *sooner or later* being displayed in the buffer, which is very
