@@ -1,0 +1,48 @@
+And God said:
+*** Error in `./shell': realloc(): invalid pointer: 0x0000000001814120 ***
+======= Backtrace: =========
+/lib/x86_64-linux-gnu/libc.so.6(+0x777f5)[0x7f77a57677f5]
+/lib/x86_64-linux-gnu/libc.so.6(realloc+0x358)[0x7f77a5774a68]
+/lib/x86_64-linux-gnu/libc.so.6(wordexp+0x113a)[0x7f77a57e56fa]
+./shell[0x40169c]
+./shell[0x401aa8]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7f77a5710840]
+./shell[0x401269]
+======= Memory map: ========
+00400000-00406000 r-xp 00000000 00:2f 18623818                           /users/dptinfo/tabary/archsys-shell.git/shell
+00605000-00606000 r--p 00005000 00:2f 18623818                           /users/dptinfo/tabary/archsys-shell.git/shell
+00606000-00607000 rw-p 00006000 00:2f 18623818                           /users/dptinfo/tabary/archsys-shell.git/shell
+017f7000-01818000 rw-p 00000000 00:00 0                                  [heap]
+7f77a0000000-7f77a0021000 rw-p 00000000 00:00 0 
+7f77a0021000-7f77a4000000 ---p 00000000 00:00 0 
+7f77a4fd4000-7f77a4fea000 r-xp 00000000 08:01 3539397                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f77a4fea000-7f77a51e9000 ---p 00016000 08:01 3539397                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f77a51e9000-7f77a51ea000 rw-p 00015000 08:01 3539397                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f77a51ea000-7f77a54c7000 r--p 00000000 08:01 1321000                    /usr/lib/locale/locale-archive
+7f77a54c7000-7f77a54ec000 r-xp 00000000 08:01 3539334                    /lib/x86_64-linux-gnu/libtinfo.so.5.9
+7f77a54ec000-7f77a56eb000 ---p 00025000 08:01 3539334                    /lib/x86_64-linux-gnu/libtinfo.so.5.9
+7f77a56eb000-7f77a56ef000 r--p 00024000 08:01 3539334                    /lib/x86_64-linux-gnu/libtinfo.so.5.9
+7f77a56ef000-7f77a56f0000 rw-p 00028000 08:01 3539334                    /lib/x86_64-linux-gnu/libtinfo.so.5.9
+7f77a56f0000-7f77a58b0000 r-xp 00000000 08:01 3539038                    /lib/x86_64-linux-gnu/libc-2.23.so
+7f77a58b0000-7f77a5ab0000 ---p 001c0000 08:01 3539038                    /lib/x86_64-linux-gnu/libc-2.23.so
+7f77a5ab0000-7f77a5ab4000 r--p 001c0000 08:01 3539038                    /lib/x86_64-linux-gnu/libc-2.23.so
+7f77a5ab4000-7f77a5ab6000 rw-p 001c4000 08:01 3539038                    /lib/x86_64-linux-gnu/libc-2.23.so
+7f77a5ab6000-7f77a5aba000 rw-p 00000000 00:00 0 
+7f77a5aba000-7f77a5af7000 r-xp 00000000 08:01 3539417                    /lib/x86_64-linux-gnu/libreadline.so.6.3
+7f77a5af7000-7f77a5cf7000 ---p 0003d000 08:01 3539417                    /lib/x86_64-linux-gnu/libreadline.so.6.3
+7f77a5cf7000-7f77a5cf9000 r--p 0003d000 08:01 3539417                    /lib/x86_64-linux-gnu/libreadline.so.6.3
+7f77a5cf9000-7f77a5cff000 rw-p 0003f000 08:01 3539417                    /lib/x86_64-linux-gnu/libreadline.so.6.3
+7f77a5cff000-7f77a5d00000 rw-p 00000000 00:00 0 
+7f77a5d00000-7f77a5d26000 r-xp 00000000 08:01 3539013                    /lib/x86_64-linux-gnu/ld-2.23.so
+7f77a5ef5000-7f77a5ef9000 rw-p 00000000 00:00 0 
+7f77a5f1d000-7f77a5f1e000 rw-p 00000000 00:00 0 
+7f77a5f1e000-7f77a5f25000 r--s 00000000 08:01 1447020                    /usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache
+7f77a5f25000-7f77a5f26000 r--p 00025000 08:01 3539013                    /lib/x86_64-linux-gnu/ld-2.23.so
+7f77a5f26000-7f77a5f27000 rw-p 00026000 08:01 3539013                    /lib/x86_64-linux-gnu/ld-2.23.so
+7f77a5f27000-7f77a5f28000 rw-p 00000000 00:00 0 
+7ffcc0446000-7ffcc0467000 rw-p 00000000 00:00 0                          [stack]
+7ffcc052f000-7ffcc0531000 r--p 00000000 00:00 0                          [vvar]
+7ffcc0531000-7ffcc0533000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+Abandon (core dumped)
+

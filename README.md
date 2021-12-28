@@ -1,7 +1,7 @@
 <p align="center">
   <img src="media/ENS_logo.png" alt="Logo ENS" height=80">
   <h2 align="center">ENS Paris-Saclay · DER Informatique</h2>
-  <h4 align="center">My Little Shell</h3>
+  <h4 align="center">SUPER SHELL 3000</h3>
 </p>
 
 ---
@@ -76,6 +76,15 @@ differ from the original one (which is too restrictive and does not allow proper
 without being too general like `[^\ ]*`, which leads to ill-formed commands like `cmd1; cmd2` into
 `cmd1;`, `cmd2` (and not `cmd1`, `SEQ`, `cmd2` as it should be).
 Because flex always try to match the longest string, the definition of a word must exclude `(`, `|`, etc.
+
+## Usage
+
+The shell asks successively for commands to be executed. The prompt of next command displays a smiley
+that reflects the exit status of the previous one. The user may chain commands just like with `sh`:
+`cmd1; cmd2`, `cmd1 | cmd2`, `cmd1 && cmd2`, etc.
+
+The test folder (you may display it with `tree` to better see what is inside) can be used in order to
+experiment with the wildcard and the `cd` built-in.
 
 ## Dependencies and installation
 
