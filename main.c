@@ -73,10 +73,17 @@ int exec_builtin (struct cmd *cmd)
     if (strcmp(cmd->args[0], "cd") == 0)
     {
 	char *dest = cmd->args[1] ? cmd->args[1] : getenv("HOME");
-	chdir(dest);
-	char *dest_fullname = calloc(FILENAME_MAX, sizeof(char));
-	getcwd(dest_fullname, FILENAME_MAX);
-	setenv("PWD", dest_fullname, 1);
+	
+	if (chdir(dest))
+	{
+	    perror(dest);
+	    return errno;
+	}
+	     
+	char *dir_path = calloc(FILENAME_MAX, sizeof(char));
+	getcwd(dir_path, FILENAME_MAX);
+	setenv("PWD", dir_path, 1);
+	free(dir_path);
 	return errno;
     }
     else
@@ -94,7 +101,8 @@ int execute (struct cmd *cmd)
     {
 	case C_PLAIN:
 	    {
-		if (!exec_builtin(cmd)) return 0;
+		int ret = exec_builtin(cmd);
+		if (ret != -1) return ret;
 
 		wordexp_t *expansion = malloc(sizeof(wordexp_t));
 		expansion->we_wordc = 0;
